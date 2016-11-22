@@ -1,0 +1,4 @@
+resolver: lts-7.9
+packages:
+ - /home/andrew/vcs/haskell/matrix
+ - .

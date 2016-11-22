@@ -1,0 +1,48 @@
+cabal-version:       >= 1.10
+name:                kalman
+version:             0.1.1
+synopsis:            Working with time
+license:             BSD3
+license-file:        LICENCE
+author:              Andrew Cowie <andrew@operationaldynamics.com>
+maintainer:          Andrew Cowie <andrew@operationaldynamics.com>
+copyright:           © 2016 Operational Dynamics Consulting Pty Ltd, and Others
+category:            Text
+tested-with:         GHC == 8.0
+
+build-type:          Simple
+
+library
+  default-language:  Haskell2010
+
+  build-depends:     base,
+                     text
+
+  hs-source-dirs:    lib
+
+  exposed-modules:   Text.Render
+
+  ghc-options:       -O2
+                     -Wall
+                     -Wwarn
+                     -fwarn-tabs
+
+  ghc-prof-options:  -fprof-auto-top
+
+
+executable           experiment
+  default-language:  Haskell2010
+
+  build-depends:     base,
+                     text,
+                     chronologique
+
+  ghc-options:       -threaded
+                     -Wall
+                     -Wwarn
+                     -fwarn-tabs
+
+  hs-source-dirs:    tests
+  main-is:           Experiment.hs
+                      
+-- vim: set tabstop=21 expandtab:
