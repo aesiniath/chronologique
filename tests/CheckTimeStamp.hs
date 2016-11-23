@@ -16,9 +16,6 @@ module CheckTimeStamp where
 import Test.Hspec
 import Chrono.TimeStamp
 
-main :: IO ()
-main = hspec checkTimeStamp
-
 checkTimeStamp :: Spec
 checkTimeStamp =
   describe "Round trip through Read and Show instances" $ do

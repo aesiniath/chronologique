@@ -69,7 +69,7 @@ instance Show TimeStamp where
         take 29 iso8601 ++ "Z"
 
 instance Read TimeStamp where
-    readsPrec _ s = maybeToList $ (,"") <$> convertToTimeStamp <$> parse s
+    readsPrec _ s = maybeToList $ (,"") <$> reduceToTimeStamp <$> parse s
       where
         parse :: String -> Maybe UTCTime
         parse x =   parseTimeM False defaultTimeLocale "%FT%T%Q%Z" x
@@ -94,8 +94,11 @@ convertToDiffTime = fromRational . (/ 1e9) . fromIntegral
 -}
 getCurrentTimeNanoseconds :: IO TimeStamp -- Word64
 getCurrentTimeNanoseconds = do
-    u <- getCurrentTime
-    return $ convertToTimeStamp u
+    p <- getPOSIXTime
+    return $ convertToTimeStamp p
+
+convertToTimeStamp :: POSIXTime -> TimeStamp
+convertToTimeStamp = floor . (* 1000000000) . toRational
 
 {-
     This code adapted from the implementation in Data.Time.Clock.POSIX. The
@@ -108,8 +111,8 @@ secondsPerDay = 86400
 unixEpochDay :: Day
 unixEpochDay = ModifiedJulianDay 40587
 
-convertToTimeStamp :: UTCTime -> TimeStamp
-convertToTimeStamp (UTCTime day secs) =
+reduceToTimeStamp :: UTCTime -> TimeStamp
+reduceToTimeStamp (UTCTime day secs) =
   let
     mark = diffDays day unixEpochDay * secondsPerDay * 1000000000
     nano = floor $ (* 1000000000) $ toRational secs
