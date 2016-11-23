@@ -1,7 +1,7 @@
 --
--- Data vault for metrics
+-- Time to manipulate time
 --
--- Copyright © 2013-2014 Anchor Systems, Pty Ltd and Others
+-- Copyright © 2013-2016 Operational Dynamics Consulting, Pty Ltd and Others
 --
 -- The code in this file, and the program it is a part of, is
 -- made available to you by its authors as open source software:
@@ -9,16 +9,18 @@
 -- the 3-clause BSD licence.
 --
 
--- | Test serialisation/deserialiastion for Vaultaire types.
+-- | Test serialisation/deserialiastion for TimeStamp type
+
+module CheckTimeStamp where
 
 import Test.Hspec
-import Vaultaire.Types
+import Chrono.TimeStamp
 
 main :: IO ()
-main = hspec suite
+main = hspec checkTimeStamp
 
-suite :: Spec
-suite =
+checkTimeStamp :: Spec
+checkTimeStamp =
   describe "Round trip through Read and Show instances" $ do
     it "outputs a correctly formated ISO 8601 timestamp when Shown" $ do
       show (TimeStamp 1406849015948797001) `shouldBe` "2014-07-31T23:23:35.948797001Z"

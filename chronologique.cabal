@@ -1,7 +1,7 @@
 cabal-version:       >= 1.10
-name:                kalman
+name:                chronologique
 version:             0.1.1
-synopsis:            Working with time
+synopsis:            Time to manipulate time
 license:             BSD3
 license-file:        LICENCE
 author:              Andrew Cowie <andrew@operationaldynamics.com>
@@ -16,11 +16,12 @@ library
   default-language:  Haskell2010
 
   build-depends:     base,
-                     text
+                     time,
+                     old-locale
 
   hs-source-dirs:    lib
 
-  exposed-modules:   Text.Render
+  exposed-modules:   Chrono.TimeStamp
 
   ghc-options:       -O2
                      -Wall
@@ -30,19 +31,38 @@ library
   ghc-prof-options:  -fprof-auto-top
 
 
-executable           experiment
+test-suite           experiment
+  type:              exitcode-stdio-1.0
   default-language:  Haskell2010
 
   build-depends:     base,
-                     text,
                      chronologique
+
+  hs-source-dirs:    tests
+
+  main-is:           Experiment.hs
 
   ghc-options:       -threaded
                      -Wall
                      -Wwarn
                      -fwarn-tabs
 
+
+test-suite           check
+  type:              exitcode-stdio-1.0
+  default-language:  Haskell2010
+
+  build-depends:     base,
+                     hspec,
+                     chronologique
+
   hs-source-dirs:    tests
-  main-is:           Experiment.hs
-                      
+
+  main-is:           TestSuite.hs
+
+  ghc-options:       -threaded
+                     -Wall
+                     -Wwarn
+                     -fwarn-tabs
+
 -- vim: set tabstop=21 expandtab:
