@@ -1,5 +1,7 @@
 --
--- Copyright © 2013-2014 Anchor Systems, Pty Ltd and Others
+-- Time to manipulate time
+--
+-- Copyright © 2013-2016 Operational Dynamics Consulting, Pty Ltd and Others
 --
 -- The code in this file, and the program it is a part of, is
 -- made available to you by its authors as open source software:
@@ -10,7 +12,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TupleSections              #-}
 
-module Vaultaire.Types.TimeStamp
+module Chrono.TimeStamp
 (
     TimeStamp(..),
     convertToDiffTime,
@@ -20,16 +22,11 @@ module Vaultaire.Types.TimeStamp
 
 import Control.Applicative
 import Data.Maybe
-import Data.Packer (getWord64LE, putWord64LE, runPacking, tryUnpacking)
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time.Format
 import Data.Word (Word64)
-import System.Locale
-import Test.QuickCheck
-
-import Vaultaire.Classes.WireFormat
 
 --
 -- | Number of nanoseconds since the Unix epoch, stored in a Word64.
@@ -49,7 +46,7 @@ import Vaultaire.Classes.WireFormat
 --
 -- There is a Read instance that is reasonably accommodating.
 --
--- >>> read "2014-07-31T13:05:04.942089001Z" ::TimeStamp
+-- >>> read "2014-07-31T13:05:04.942089001Z" :: TimeStamp
 -- 2014-07-31T13:05:04.942089001Z
 --
 -- >>> read "1406811904.942089001" :: TimeStamp
@@ -60,7 +57,7 @@ import Vaultaire.Classes.WireFormat
 --
 newtype TimeStamp = TimeStamp {
     unTimeStamp :: Word64
-} deriving (Eq, Ord, Enum, Arbitrary, Num, Real, Integral, Bounded)
+} deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded)
 
 instance Show TimeStamp where
     show (TimeStamp t) =
@@ -75,13 +72,9 @@ instance Read TimeStamp where
     readsPrec _ s = maybeToList $ (,"") <$> convertToTimeStamp <$> parse s
       where
         parse :: String -> Maybe UTCTime
-        parse x =   parseTime defaultTimeLocale "%FT%T%Q%Z" x
-                <|> parseTime defaultTimeLocale "%F" x
-                <|> parseTime defaultTimeLocale "%s%Q" x
-
-instance WireFormat TimeStamp where
-    toWire = runPacking 8 . putWord64LE . unTimeStamp
-    fromWire = tryUnpacking (TimeStamp `fmap` getWord64LE)
+        parse x =   parseTimeM False defaultTimeLocale "%FT%T%Q%Z" x
+                <|> parseTimeM False defaultTimeLocale "%F" x
+                <|> parseTimeM False defaultTimeLocale "%s%Q" x
 
 --
 -- | Utility function to convert nanoseconds since Unix epoch to a
@@ -106,8 +99,7 @@ getCurrentTimeNanoseconds = do
 
 {-
     This code adapted from the implementation in Data.Time.Clock.POSIX. The
-    time types in base are hopeless. Julian days? Really? We'll replace this
-    with hs-hourglass shortly.
+    time types in base are hopeless. Julian days? Really?
 -}
 
 secondsPerDay :: Integer
@@ -120,6 +112,6 @@ convertToTimeStamp :: UTCTime -> TimeStamp
 convertToTimeStamp (UTCTime day secs) =
   let
     mark = diffDays day unixEpochDay * secondsPerDay * 1000000000
-    nano = floor $ (*1000000000) $ toRational secs
+    nano = floor $ (* 1000000000) $ toRational secs
   in
     TimeStamp $ fromIntegral $ mark + nano
