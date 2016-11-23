@@ -14,10 +14,20 @@
 module CheckTimeStamp where
 
 import Test.Hspec
+import Data.Hourglass
+
 import Chrono.TimeStamp
 
 checkTimeStamp :: Spec
-checkTimeStamp =
+checkTimeStamp = do
+  describe "Adaptor around Hourglass types" $ do
+        it "formats a known date correctly" $ do
+            timePrint ISO8601_Precise (TimeStamp 1406849015948797001) `shouldBe` "2014-07-31T23:23:35.948797001Z"
+
+        it "uses timeParse effectively" $ do
+            timeParse ISO8601_Precise "2014-07-31T23:42:35.948797001Z" `shouldBe`
+                Just (DateTime (Date 2014 July 31) (TimeOfDay 23 42 35 948797001))
+
   describe "Round trip through Read and Show instances" $ do
     it "outputs a correctly formated ISO 8601 timestamp when Shown" $ do
       show (TimeStamp 1406849015948797001) `shouldBe` "2014-07-31T23:23:35.948797001Z"
@@ -36,3 +46,4 @@ checkTimeStamp =
       show (read "1970-01-01T00:00:00.000000000Z" :: TimeStamp) `shouldBe` "1970-01-01T00:00:00.000000000Z"
       show (read "1970-01-01" :: TimeStamp) `shouldBe` "1970-01-01T00:00:00.000000000Z"
       show (read "0" :: TimeStamp) `shouldBe` "1970-01-01T00:00:00.000000000Z"
+

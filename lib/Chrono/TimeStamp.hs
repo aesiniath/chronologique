@@ -10,23 +10,28 @@
 --
 
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TupleSections              #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE TupleSections #-}
 
 module Chrono.TimeStamp
 (
     TimeStamp(..),
     convertToDiffTime,
     convertToTimeStamp,
-    getCurrentTimeNanoseconds
+    getCurrentTimeNanoseconds,
+
+    ISO8601_Precise(..)
 ) where
 
 import Control.Applicative
 import Data.Maybe
-import Data.Time.Calendar
 import Data.Time.Clock
-import Data.Time.Clock.POSIX
-import Data.Time.Format
+import Data.Int (Int64)
 import Data.Word (Word64)
+import Data.Hourglass
+import Time.System
+
+import Chrono.Formats
 
 --
 -- | Number of nanoseconds since the Unix epoch, stored in a Word64.
@@ -59,22 +64,34 @@ newtype TimeStamp = TimeStamp {
     unTimeStamp :: Word64
 } deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded)
 
-instance Show TimeStamp where
-    show (TimeStamp t) =
+instance Timeable TimeStamp where
+    timeGetElapsedP :: TimeStamp -> ElapsedP
+    timeGetElapsedP (TimeStamp ticks) =
       let
-        seconds = posixSecondsToUTCTime $ realToFrac (fromIntegral t / 1000000000 :: Rational)
-        iso8601 = formatTime defaultTimeLocale "%FT%T.%q" seconds
+        (s,ns) = divMod ticks 1000000000
+
+        cast :: Word64 -> Int64
+        cast = fromInteger . toInteger
       in
-        -- trim to nanoseconds
-        take 29 iso8601 ++ "Z"
+        ElapsedP (Elapsed (Seconds (cast s))) (NanoSeconds (cast ns))
+
+instance Show TimeStamp where
+    show t =
+        timePrint ISO8601_Precise t
 
 instance Read TimeStamp where
     readsPrec _ s = maybeToList $ (,"") <$> reduceToTimeStamp <$> parse s
       where
-        parse :: String -> Maybe UTCTime
-        parse x =   parseTimeM False defaultTimeLocale "%FT%T%Q%Z" x
-                <|> parseTimeM False defaultTimeLocale "%F" x
-                <|> parseTimeM False defaultTimeLocale "%s%Q" x
+        parse :: String -> Maybe DateTime
+        parse x =   timeParse ISO8601_Precise x
+                <|> timeParse ISO8601_Seconds x
+                <|> timeParse ISO8601_Days x
+                <|> timeParse ISO8601_DateAndTime x -- from hourglass
+                <|> timeParse Posix_Precise x
+                <|> timeParse Posix_Seconds x
+
+reduceToTimeStamp :: DateTime -> TimeStamp
+reduceToTimeStamp = convertToTimeStamp . timeGetElapsedP
 
 --
 -- | Utility function to convert nanoseconds since Unix epoch to a
@@ -94,27 +111,14 @@ convertToDiffTime = fromRational . (/ 1e9) . fromIntegral
 -}
 getCurrentTimeNanoseconds :: IO TimeStamp -- Word64
 getCurrentTimeNanoseconds = do
-    p <- getPOSIXTime
+    p <- timeCurrentP
     return $ convertToTimeStamp p
 
-convertToTimeStamp :: POSIXTime -> TimeStamp
-convertToTimeStamp = floor . (* 1000000000) . toRational
-
-{-
-    This code adapted from the implementation in Data.Time.Clock.POSIX. The
-    time types in base are hopeless. Julian days? Really?
--}
-
-secondsPerDay :: Integer
-secondsPerDay = 86400
-
-unixEpochDay :: Day
-unixEpochDay = ModifiedJulianDay 40587
-
-reduceToTimeStamp :: UTCTime -> TimeStamp
-reduceToTimeStamp (UTCTime day secs) =
+convertToTimeStamp :: ElapsedP -> TimeStamp
+convertToTimeStamp (ElapsedP (Elapsed (Seconds seconds)) (NanoSeconds nanoseconds)) =
   let
-    mark = diffDays day unixEpochDay * secondsPerDay * 1000000000
-    nano = floor $ (* 1000000000) $ toRational secs
+    s  = fromIntegral seconds :: Word64
+    ns = fromIntegral nanoseconds
   in
-    TimeStamp $ fromIntegral $ mark + nano
+    TimeStamp (s * 1000000000) + ns
+
