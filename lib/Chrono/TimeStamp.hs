@@ -16,8 +16,6 @@
 module Chrono.TimeStamp
 (
     TimeStamp(..),
-    convertToDiffTime,
-    convertToTimeStamp,
     getCurrentTimeNanoseconds,
 
     ISO8601_Precise(..)
@@ -25,7 +23,6 @@ module Chrono.TimeStamp
 
 import Control.Applicative
 import Data.Maybe
-import Data.Time.Clock
 import Data.Int (Int64)
 import Data.Word (Word64)
 import Data.Hourglass
@@ -64,6 +61,12 @@ newtype TimeStamp = TimeStamp {
     unTimeStamp :: Word64
 } deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded)
 
+{-
+    Hourglass works by sending types in and out of the Timeable and Time
+    typeclasses. They're not particularly easy to work with, but they're a
+    prerequisite for using timePrint
+-}
+
 instance Timeable TimeStamp where
     timeGetElapsedP :: TimeStamp -> ElapsedP
     timeGetElapsedP (TimeStamp ticks) =
@@ -75,50 +78,42 @@ instance Timeable TimeStamp where
       in
         ElapsedP (Elapsed (Seconds (cast s))) (NanoSeconds (cast ns))
 
+instance Time TimeStamp where
+    timeFromElapsedP :: ElapsedP -> TimeStamp
+    timeFromElapsedP (ElapsedP (Elapsed (Seconds seconds)) (NanoSeconds nanoseconds)) =
+      let
+        s  = fromIntegral seconds :: Word64
+        ns = fromIntegral nanoseconds
+      in
+        TimeStamp $! (s * 1000000000) + ns
+
+
 instance Show TimeStamp where
     show t =
         timePrint ISO8601_Precise t
 
 instance Read TimeStamp where
-    readsPrec _ s = maybeToList $ (,"") <$> reduceToTimeStamp <$> parse s
+    readsPrec _ s = maybeToList $ (,"") <$> reduceDateTime <$> parse s
       where
         parse :: String -> Maybe DateTime
         parse x =   timeParse ISO8601_Precise x
                 <|> timeParse ISO8601_Seconds x
-                <|> timeParse ISO8601_Days x
                 <|> timeParse ISO8601_DateAndTime x -- from hourglass
+                <|> timeParse ISO8601_Date x        -- from hourglass
                 <|> timeParse Posix_Precise x
                 <|> timeParse Posix_Seconds x
 
-reduceToTimeStamp :: DateTime -> TimeStamp
-reduceToTimeStamp = convertToTimeStamp . timeGetElapsedP
-
---
--- | Utility function to convert nanoseconds since Unix epoch to a
--- 'NominalDiffTime', allowing you to then use the time manipulation
--- functions in "Data.Time.Clock"
---
-convertToDiffTime :: TimeStamp -> NominalDiffTime
-convertToDiffTime = fromRational . (/ 1e9) . fromIntegral
+reduceDateTime :: DateTime -> TimeStamp
+reduceDateTime = timeFromElapsedP . timeGetElapsedP
 
 --
 -- | Get the current system time, expressed as a 'TimeStamp' (which is to
 -- say, number of nanoseconds since the Unix epoch).
 --
-{-
-    getPOSIXTime returns a NominalDiffTime with picosecond precision. So
-    convert it to nanoseconds, and discard any remaining fractional amount.
--}
 getCurrentTimeNanoseconds :: IO TimeStamp -- Word64
 getCurrentTimeNanoseconds = do
     p <- timeCurrentP
-    return $ convertToTimeStamp p
+    return $! convertToTimeStamp p
 
 convertToTimeStamp :: ElapsedP -> TimeStamp
-convertToTimeStamp (ElapsedP (Elapsed (Seconds seconds)) (NanoSeconds nanoseconds)) =
-  let
-    s  = fromIntegral seconds :: Word64
-    ns = fromIntegral nanoseconds
-  in
-    TimeStamp (s * 1000000000) + ns
-
+convertToTimeStamp = timeFromElapsedP

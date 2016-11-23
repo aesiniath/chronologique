@@ -22,6 +22,11 @@ module Chrono.Formats
 
 import Data.Hourglass
 
+--
+-- | Format string describing full (nanosecond) precision ISO8601 time,
+--
+-- > 2014-07-31T23:09:35.274387019Z
+--
 data ISO8601_Precise = ISO8601_Precise
 
 instance TimeFormat ISO8601_Precise where
@@ -77,7 +82,7 @@ instance TimeFormat Posix_Precise where
     toFormat _ = TimeFormatString 
         [ Format_UnixSecond
         , Format_Text '.'
-        , Format_NanoSecond
+        , Format_Precision 9
         ]
 
 data Posix_Seconds = Posix_Seconds

@@ -22,6 +22,7 @@ library
   hs-source-dirs:    lib
 
   exposed-modules:   Chrono.TimeStamp
+                     Chrono.Compat
   other-modules:     Chrono.Formats
 
   ghc-options:       -O2
