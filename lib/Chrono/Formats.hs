@@ -13,13 +13,13 @@
 
 module Chrono.Formats
 (
-      ISO8601_Precise(..)
-    , ISO8601_Seconds(..)
-    , ISO8601_Days(..)
-    , Posix_Precise(..)
-    , Posix_Micro(..)
-    , Posix_Milli(..)
-    , Posix_Seconds(..)
+    ISO8601_Precise(..)
+  , ISO8601_Seconds(..)
+  , ISO8601_Days(..)
+  , Posix_Precise(..)
+  , Posix_Micro(..)
+  , Posix_Milli(..)
+  , Posix_Seconds(..)
 ) where
 
 import Data.Hourglass

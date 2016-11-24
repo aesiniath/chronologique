@@ -15,10 +15,10 @@
 
 module Chrono.TimeStamp
 (
-    TimeStamp(..),
-    getCurrentTimeNanoseconds,
+    TimeStamp(..)
+  , getCurrentTimeNanoseconds
 
-    ISO8601_Precise(..)
+  , ISO8601_Precise(..)
 ) where
 
 import Control.Applicative
@@ -38,13 +38,13 @@ import Chrono.Formats
 --
 -- >>> t <- getCurrentTimeNanoseconds
 -- >>> show t
--- 2014-07-31T23:09:35.274387000Z
+-- 2014-07-31T23:09:35.274387031Z
 --
 -- However this doesn't change the fact the underlying representation counts
 -- nanoseconds since epoch:
 --
 -- >>> show $ unTimeStamp t
--- 1406848175274387000
+-- 1406848175274387031
 --
 -- There is a Read instance that is reasonably accommodating.
 --

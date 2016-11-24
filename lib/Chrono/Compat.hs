@@ -10,21 +10,32 @@
 --
 
 --
--- | Compatibility with types in the built-in **time** package.
+-- | Compatibility with time types from other time handling libraries.
 
 module Chrono.Compat
 (
-    convertToDiffTime
+    convertToBaseTime
+  , convertToHourglass
 ) where
 
-import Data.Time.Clock
+import Data.Time.Clock.POSIX
+import Data.Hourglass
 
 import Chrono.TimeStamp
 
 --
 -- | Utility function to convert nanoseconds since Unix epoch to a
 -- 'NominalDiffTime', allowing you to then use the time manipulation
--- functions in "Data.Time.Clock"
+-- functions in "Data.Time.Clock" from __base__.
 --
-convertToDiffTime :: TimeStamp -> NominalDiffTime
-convertToDiffTime = fromRational . (/ 1e9) . fromIntegral
+convertToBaseTime :: TimeStamp -> POSIXTime
+convertToBaseTime = fromRational . (/ 1e9) . fromIntegral
+
+--
+--
+-- | Utility function to convert nanoseconds since Unix epoch to a
+-- 'ElapsedP', allowing you to then use the time manipulation
+-- functions in the __hourglass__ package.
+--
+convertToHourglass :: TimeStamp -> ElapsedP
+convertToHourglass = timeGetElapsedP
