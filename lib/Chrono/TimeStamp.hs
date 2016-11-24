@@ -31,7 +31,7 @@ import Time.System
 import Chrono.Formats
 
 --
--- | Number of nanoseconds since the Unix epoch, stored in a Word64.
+-- | Number of nanoseconds since the Unix epoch.
 --
 -- The Show instance displays the TimeStamp as seconds with the nanosecond
 -- precision expressed as a decimal amount after the interger, ie:
@@ -57,8 +57,21 @@ import Chrono.Formats
 -- >>> read "1406811904" :: TimeStamp
 -- 2014-07-31T13:05:04.000000000Z
 --
+-- In case you're wondering, the valid range of nanoseconds that fits into the
+-- underlying Int64 is:
+--
+-- >>> show $ minBound :: TimeStamp
+-- 1677-09-21T00:12:43.145224192Z
+--
+-- >>> show $ maxBound :: TimeStamp
+-- 2262-04-11T23:47:16.854775807Z
+--
+-- so in a quarter millenium's time, yes, you'll have the Y2262 Problem.
+-- Haskell code from today will, of course, still be running, so you will need
+-- to replace this implementation with something else.
+--
 newtype TimeStamp = TimeStamp {
-    unTimeStamp :: Word64
+    unTimeStamp :: Int64
 } deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded)
 
 {-
@@ -72,17 +85,14 @@ instance Timeable TimeStamp where
     timeGetElapsedP (TimeStamp ticks) =
       let
         (s,ns) = divMod ticks 1000000000
-
-        cast :: Word64 -> Int64
-        cast = fromInteger . toInteger
       in
-        ElapsedP (Elapsed (Seconds (cast s))) (NanoSeconds (cast ns))
+        ElapsedP (Elapsed (Seconds (s))) (NanoSeconds (ns))
 
 instance Time TimeStamp where
     timeFromElapsedP :: ElapsedP -> TimeStamp
     timeFromElapsedP (ElapsedP (Elapsed (Seconds seconds)) (NanoSeconds nanoseconds)) =
       let
-        s  = fromIntegral seconds :: Word64
+        s  = fromIntegral seconds :: Int64
         ns = fromIntegral nanoseconds
       in
         TimeStamp $! (s * 1000000000) + ns

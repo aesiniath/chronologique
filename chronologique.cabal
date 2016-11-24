@@ -1,6 +1,6 @@
 cabal-version:       >= 1.10
 name:                chronologique
-version:             0.1.1
+version:             0.2.1
 synopsis:            Time to manipulate time
 license:             BSD3
 license-file:        LICENCE

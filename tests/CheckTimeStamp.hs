@@ -12,6 +12,7 @@
 -- | Test serialisation/deserialiastion for TimeStamp type
 
 {-# LANGUAGE BinaryLiterals #-}
+{-# LANGUAGE NegativeLiterals #-}
 
 module CheckTimeStamp where
 
@@ -25,7 +26,7 @@ checkTimeStamp :: Spec
 checkTimeStamp = do
     describe "Smallest valid TimeStamp" $
       let
-        t = TimeStamp 0
+        t = TimeStamp (-9223372036854775808)
       in do
         it "should be representable" $ do
             t `shouldBe` (minBound :: TimeStamp)
@@ -34,11 +35,11 @@ checkTimeStamp = do
             show t `shouldBe` show (minBound :: TimeStamp)
 
         it "should equal expected value" $ do
-            show t `shouldBe` "1970-01-01T00:00:00.000000000Z"
+            show t `shouldBe` "1677-09-21T00:12:43.145224192Z"
 
     describe "Largest valid TimeStamp" $
       let
-        t = TimeStamp 0b1111111111111111111111111111111111111111111111111111111111111111
+        t = TimeStamp 9223372036854775807
       in do
         it "should be representable" $ do
             t `shouldBe` (maxBound :: TimeStamp)
@@ -47,7 +48,7 @@ checkTimeStamp = do
             show t `shouldBe` show (maxBound :: TimeStamp)
 
         it "should equal expected value" $ do
-            show t `shouldBe` "2554-07-21T23:34:33.709551615Z"
+            show t `shouldBe` "2262-04-11T23:47:16.854775807Z"
 
     describe "Printing and parsing with precise format" $ do
         it "formats a known date correctly" $ do
