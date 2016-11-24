@@ -47,3 +47,9 @@ checkTimeStamp = do
             show (read "1970-01-01" :: TimeStamp) `shouldBe` "1970-01-01T00:00:00.000000000Z"
             show (read "0" :: TimeStamp) `shouldBe` "1970-01-01T00:00:00.000000000Z"
 
+        it "permissively reads Posix seconds since epoch" $ do
+            show (read "1406849015.948797001" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.948797001Z"
+            show (read "1406849015.948797" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.948797000Z"
+            show (read "1406849015.948" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.948000000Z"
+            show (read "1406849015" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.000000000Z"
+

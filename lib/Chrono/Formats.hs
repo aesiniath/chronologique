@@ -17,6 +17,8 @@ module Chrono.Formats
     , ISO8601_Seconds(..)
     , ISO8601_Days(..)
     , Posix_Precise(..)
+    , Posix_Micro(..)
+    , Posix_Milli(..)
     , Posix_Seconds(..)
 ) where
 
@@ -79,15 +81,36 @@ instance TimeFormat ISO8601_Days where
 data Posix_Precise = Posix_Precise
 
 instance TimeFormat Posix_Precise where
-    toFormat _ = TimeFormatString 
+    toFormat _ = TimeFormatString
         [ Format_UnixSecond
         , Format_Text '.'
-        , Format_Precision 9
+        , Format_MilliSecond
+        , Format_MicroSecond
+        , Format_NanoSecond
+        ]
+
+data Posix_Micro = Posix_Micro
+
+instance TimeFormat Posix_Micro where
+    toFormat _ = TimeFormatString
+        [ Format_UnixSecond
+        , Format_Text '.'
+        , Format_MilliSecond
+        , Format_MicroSecond
+        ]
+
+data Posix_Milli = Posix_Milli
+
+instance TimeFormat Posix_Milli where
+    toFormat _ = TimeFormatString
+        [ Format_UnixSecond
+        , Format_Text '.'
+        , Format_MilliSecond
         ]
 
 data Posix_Seconds = Posix_Seconds
 
 instance TimeFormat Posix_Seconds where
-    toFormat _ = TimeFormatString 
+    toFormat _ = TimeFormatString
         [ Format_UnixSecond
         ]

@@ -101,6 +101,8 @@ instance Read TimeStamp where
                 <|> timeParse ISO8601_DateAndTime x -- from hourglass
                 <|> timeParse ISO8601_Date x        -- from hourglass
                 <|> timeParse Posix_Precise x
+                <|> timeParse Posix_Micro x
+                <|> timeParse Posix_Milli x
                 <|> timeParse Posix_Seconds x
 
 reduceDateTime :: DateTime -> TimeStamp
