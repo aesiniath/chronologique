@@ -16,11 +16,14 @@ library
   default-language:  Haskell2010
 
   build-depends:     base,
-                     time
+                     time,
+                     hourglass
 
   hs-source-dirs:    lib
 
   exposed-modules:   Chrono.TimeStamp
+                     Chrono.Compat
+  other-modules:     Chrono.Formats
 
   ghc-options:       -O2
                      -Wall
@@ -54,6 +57,7 @@ test-suite           check
 
   build-depends:     base,
                      hspec,
+                     hourglass,
                      chronologique
 
   hs-source-dirs:    tests
