@@ -30,7 +30,6 @@ import Data.Int (Int64)
 import Data.Hourglass
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
-import Foreign.C.Types (CTime)
 
 import Chrono.TimeStamp
 
@@ -60,13 +59,7 @@ convertFromHourglass = timeFromElapsedP
 -- you need to get to, or from, 'UTCTime'.
 --
 convertToUTC :: TimeStamp -> UTCTime
-convertToUTC x =
-  let
-    seconds :: TimeStamp -> CTime
-    seconds = timeFromElapsedP . timeGetElapsedP
-    utctime = posixSecondsToUTCTime . realToFrac . seconds
-  in
-    utctime x
+convertToUTC = posixSecondsToUTCTime . convertToPosix
 
 convertFromUTC :: UTCTime -> TimeStamp
 convertFromUTC = convertFromPosix . utcTimeToPOSIXSeconds

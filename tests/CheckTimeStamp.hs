@@ -17,6 +17,7 @@ import Test.Hspec
 import Data.Hourglass
 
 import Chrono.TimeStamp
+import Chrono.Compat
 
 checkTimeStamp :: Spec
 checkTimeStamp = do
@@ -52,4 +53,20 @@ checkTimeStamp = do
             show (read "1406849015.948797" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.948797000Z"
             show (read "1406849015.948" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.948000000Z"
             show (read "1406849015" :: TimeStamp) `shouldBe` "2014-07-31T23:23:35.000000000Z"
+{-
+    This is a bit fragile, depending as it does on the serialization to String
+    in the Show instance of UTCTime. Not that they're going to change it
+    anytime soon.
+-}
+
+    describe "Round trip through base time types" $ do
+        it "converts to POSIXTime and back again" $ do
+            let t = TimeStamp 1406849015948797001
+            convertFromPosix (convertToPosix t) `shouldBe` t
+            show (convertToPosix t) `shouldBe` "1406849015.948797001s"
+
+        it "converts to UTCTime and back again" $ do
+            let t = TimeStamp 1406849015948797001
+            convertFromUTC (convertToUTC t) `shouldBe` t
+            show (convertToUTC t) `shouldBe` "2014-07-31 23:23:35.948797001 UTC"
 
