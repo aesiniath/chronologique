@@ -11,6 +11,8 @@
 
 -- | Test serialisation/deserialiastion for TimeStamp type
 
+{-# LANGUAGE BinaryLiterals #-}
+
 module CheckTimeStamp where
 
 import Test.Hspec
@@ -21,6 +23,32 @@ import Chrono.Compat
 
 checkTimeStamp :: Spec
 checkTimeStamp = do
+    describe "Smallest valid TimeStamp" $
+      let
+        t = TimeStamp 0
+      in do
+        it "should be representable" $ do
+            t `shouldBe` (minBound :: TimeStamp)
+
+        it "should be match when Shown" $ do
+            show t `shouldBe` show (minBound :: TimeStamp)
+
+        it "should equal expected value" $ do
+            show t `shouldBe` "1970-01-01T00:00:00.000000000Z"
+
+    describe "Largest valid TimeStamp" $
+      let
+        t = TimeStamp 0b1111111111111111111111111111111111111111111111111111111111111111
+      in do
+        it "should be representable" $ do
+            t `shouldBe` (maxBound :: TimeStamp)
+
+        it "should be match when Shown" $ do
+            show t `shouldBe` show (maxBound :: TimeStamp)
+
+        it "should equal expected value" $ do
+            show t `shouldBe` "2554-07-21T23:34:33.709551615Z"
+
     describe "Printing and parsing with precise format" $ do
         it "formats a known date correctly" $ do
             timePrint ISO8601_Precise (TimeStamp 1406849015948797001) `shouldBe` "2014-07-31T23:23:35.948797001Z"
@@ -69,4 +97,3 @@ checkTimeStamp = do
             let t = TimeStamp 1406849015948797001
             convertFromUTC (convertToUTC t) `shouldBe` t
             show (convertToUTC t) `shouldBe` "2014-07-31 23:23:35.948797001 UTC"
-
