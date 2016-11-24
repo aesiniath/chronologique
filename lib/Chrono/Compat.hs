@@ -10,26 +10,37 @@
 --
 
 --
--- | Compatibility with time types from other time handling libraries.
-
+-- | Compatibility with time types from other time handling libraries. Some of
+-- these are just conveniences, but it's not always obvious how to convert
+-- between time types even in the same package.
+--
 module Chrono.Compat
 (
-    convertToBaseTime
+  -- * time package, from base
+    convertToPosix
+  , convertFromPosix
+  , convertToUTC
+  , convertFromUTC
+  -- * hourglass package
   , convertToHourglass
+  , convertFromHourglass
 ) where
 
-import Data.Time.Clock.POSIX
+import Data.Int (Int64)
 import Data.Hourglass
+import Data.Time.Clock
+import Data.Time.Clock.POSIX
+import Foreign.C.Types (CTime)
 
 import Chrono.TimeStamp
 
 --
 -- | Utility function to convert nanoseconds since Unix epoch to a
 -- 'NominalDiffTime', allowing you to then use the time manipulation
--- functions in "Data.Time.Clock" from __base__.
+-- functions in "Data.Time.Clock" from __time__.
 --
-convertToBaseTime :: TimeStamp -> POSIXTime
-convertToBaseTime = fromRational . (/ 1e9) . fromIntegral
+convertToPosix :: TimeStamp -> POSIXTime
+convertToPosix = fromRational . (/ 1e9) . fromIntegral
 
 --
 --
@@ -39,3 +50,31 @@ convertToBaseTime = fromRational . (/ 1e9) . fromIntegral
 --
 convertToHourglass :: TimeStamp -> ElapsedP
 convertToHourglass = timeGetElapsedP
+
+convertFromHourglass :: ElapsedP -> TimeStamp
+convertFromHourglass = timeFromElapsedP
+
+
+--
+-- | Annoyingly, the various types in __time__ don't interoperate. Quite frequently
+-- you need to get to, or from, 'UTCTime'.
+--
+convertToUTC :: TimeStamp -> UTCTime
+convertToUTC x =
+  let
+    seconds :: TimeStamp -> CTime
+    seconds = timeFromElapsedP . timeGetElapsedP
+    utctime = posixSecondsToUTCTime . realToFrac . seconds
+  in
+    utctime x
+
+convertFromUTC :: UTCTime -> TimeStamp
+convertFromUTC = convertFromPosix . utcTimeToPOSIXSeconds
+
+convertFromPosix :: POSIXTime -> TimeStamp
+convertFromPosix =
+  let
+    nano :: POSIXTime -> Int64
+    nano = floor . (* 1000000000) . toRational
+  in
+    TimeStamp . fromIntegral . nano
