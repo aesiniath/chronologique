@@ -24,7 +24,6 @@ module Chrono.TimeStamp
 import Control.Applicative
 import Data.Maybe
 import Data.Int (Int64)
-import Data.Word (Word64)
 import Data.Hourglass
 import Time.System
 
@@ -122,7 +121,7 @@ reduceDateTime = timeFromElapsedP . timeGetElapsedP
 -- | Get the current system time, expressed as a 'TimeStamp' (which is to
 -- say, number of nanoseconds since the Unix epoch).
 --
-getCurrentTimeNanoseconds :: IO TimeStamp -- Word64
+getCurrentTimeNanoseconds :: IO TimeStamp
 getCurrentTimeNanoseconds = do
     p <- timeCurrentP
     return $! convertToTimeStamp p
