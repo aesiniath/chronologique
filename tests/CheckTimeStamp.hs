@@ -13,10 +13,12 @@
 
 {-# LANGUAGE BinaryLiterals #-}
 {-# LANGUAGE NegativeLiterals #-}
+{-# OPTIONS -fno-warn-orphans #-}
 
 module CheckTimeStamp where
 
 import Test.Hspec
+import Test.QuickCheck
 import Data.Hourglass
 
 import Chrono.TimeStamp
@@ -98,3 +100,15 @@ checkTimeStamp = do
             let t = TimeStamp 1406849015948797001
             convertFromUTC (convertToUTC t) `shouldBe` t
             show (convertToUTC t) `shouldBe` "2014-07-31 23:23:35.948797001 UTC"
+
+        it "behaves when QuickChecked" $ do
+            property prop_RoundTrip
+
+
+instance Arbitrary TimeStamp where
+    arbitrary = do
+        tick <- arbitrary
+        return (TimeStamp tick)
+
+prop_RoundTrip :: TimeStamp -> Bool
+prop_RoundTrip t = (read . show) t == t

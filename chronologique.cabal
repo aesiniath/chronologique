@@ -58,6 +58,7 @@ test-suite           check
   build-depends:     base,
                      hspec,
                      hourglass,
+                     QuickCheck,
                      chronologique
 
   hs-source-dirs:    tests
