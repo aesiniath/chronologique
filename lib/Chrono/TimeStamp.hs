@@ -66,8 +66,9 @@ import Chrono.Formats
 -- 2262-04-11T23:47:16.854775807Z
 --
 -- so in a quarter millenium's time, yes, you'll have the Y2262 Problem.
--- Haskell code from today will, of course, still be running, so you will need
--- to replace this implementation with something else.
+-- Haskell code from today will, of course, still be running, so in the mid
+-- Twenty-Third century you will need to replace this implementation with
+-- something else.
 --
 newtype TimeStamp = TimeStamp {
     unTimeStamp :: Int64
