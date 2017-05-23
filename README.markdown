@@ -15,21 +15,25 @@ and calendar types available by default then by all means have at it.
 
 This package was seeded using the TimeStamp type originally from the Vaultaire
 project, a time-series database for systems metrics. That type was originally
-implemented as a shim on top of base's **time** package; limitations there have
-led it to be reimplemented atop of the very complete (but also somewhat
-complicated) **hourglass** library.
+implemented as a shim on top of base's **time** package; limitations there
+(notably base being misleading about precision) have led it to be reimplemented
+atop of the very complete (but also somewhat complicated) **hourglass**
+library.
 
 Our original use was wanting to conveniently measure things happening on
 distributed computer systems. Since machine clock cycles are in units of
 nanoseconds, this has the nice property that, assuming the system clock is not
-corrupted, two subsequent events from the same source process are guaranteed to
+corrupted, two subsequent events from the same source process are likely to
 have monotonically increasing timestamps. And even if the system clock goes to
 hell, they're still decently likely to be unique per device. Make for good
 keys.
 
-So the TimeStamp type herein is nanoseconds since the Unix epoch; which in 64
-bits means that you can represent times between early in the morning of 21
-September 1677 through just before midnight on 11 April 2262. The primary use
-isn't doing calendaring, though; it's just working with machine generated
-timestamps in distributed systems.
+So the TimeStamp type herein is nanoseconds since the Unix epoch; which in
+(signed) 64 bits means that you can represent times between early in the
+morning of 21 September 1677 through just before midnight on 11 April 2262. The
+primary use isn't doing calendaring, though; it's just working with machine
+generated timestamps in distributed systems.
+
+_Yes, at present that's all it is. A newtype over Int64, and some convenience
+functions._
 
