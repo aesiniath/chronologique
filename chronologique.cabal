@@ -30,7 +30,7 @@ build-type:          Simple
 library
   default-language:  Haskell2010
 
-  build-depends:     base,
+  build-depends:     base >= 4.9 && < 5,
                      time,
                      hourglass
 
@@ -40,13 +40,9 @@ library
                      Chrono.Compat
   other-modules:     Chrono.Formats
 
-  ghc-options:       -O2
-                     -Wall
+  ghc-options:       -Wall
                      -Wwarn
                      -fwarn-tabs
-
-  ghc-prof-options:  -fprof-auto-top
-
 
 test-suite           experiment
   type:              exitcode-stdio-1.0
@@ -61,6 +57,7 @@ test-suite           experiment
   main-is:           Experiment.hs
 
   ghc-options:       -threaded
+                     -O2
                      -Wall
                      -Wwarn
                      -fwarn-tabs
@@ -83,6 +80,7 @@ test-suite           check
   other-modules:     CheckTimeStamp
 
   ghc-options:       -threaded
+                     -O2
                      -Wall
                      -Wwarn
                      -fwarn-tabs
