@@ -35,5 +35,6 @@ primary use isn't doing calendaring, though; it's just working with machine
 generated timestamps in distributed systems.
 
 _Yes, at present that's all it is. A newtype over Int64, and some convenience
-functions._
+functions. Hopefully more common idioms will land here in due course._
+
 
