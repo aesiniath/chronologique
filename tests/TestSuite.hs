@@ -8,7 +8,9 @@ import CheckTimeStamp
 import CheckVectorOperations
 
 main :: IO ()
-main = hspec suite
+main = do
+    hspec suite
+    putStrLn "."
 
 suite :: Spec
 suite = do
