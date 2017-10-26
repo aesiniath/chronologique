@@ -13,6 +13,7 @@
 
 module CheckVectorOperations where
 
+import qualified Data.Vector.Unboxed as V
 import Test.Hspec
 import Test.QuickCheck
 
@@ -22,4 +23,6 @@ checkVectorUnboxed :: Spec
 checkVectorUnboxed = do
     describe "Unbox instance for TimeStamp" $
         it "should work in an unboxed Vector" $ do
-            True `shouldBe` True
+            let vs = V.fromList [minBound, 0, maxBound] :: V.Vector TimeStamp
+            show vs `shouldBe` "[1677-09-21T00:12:43.145224192Z,1970-01-01T00:00:00.000000000Z,2262-04-11T23:47:16.854775807Z]"
+ 
