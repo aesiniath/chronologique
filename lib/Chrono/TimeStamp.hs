@@ -124,10 +124,6 @@ instance Read TimeStamp where
 reduceDateTime :: DateTime -> TimeStamp
 reduceDateTime = timeFromElapsedP . timeGetElapsedP
 
-instance M.MVector MVector TimeStamp
-instance G.Vector Vector TimeStamp
-instance Unbox TimeStamp
-
 --
 -- | Get the current system time, expressed as a 'TimeStamp' (which is to
 -- say, number of nanoseconds since the Unix epoch).
@@ -139,3 +135,42 @@ getCurrentTimeNanoseconds = do
 
 convertToTimeStamp :: ElapsedP -> TimeStamp
 convertToTimeStamp = timeFromElapsedP
+
+{-
+    Ideally both the existing G.Vector Vector Int64 and M.MVector MVector
+    Int64 instances would be sufficient to support automatically deriving
+    those things for TimeStamp. But, *gaboom* somewhere down in GHC.Prim;
+    writing this gumpf out manually did the trick, and satisifies the
+    superclass requirements to derive an Unbox instance.
+-}
+
+instance G.Vector Vector TimeStamp where
+    basicUnsafeFreeze v = G.basicUnsafeFreeze v
+    basicUnsafeThaw v = G.basicUnsafeThaw v
+    basicLength v = G.basicLength v
+    basicUnsafeSlice v = G.basicUnsafeSlice v
+    basicUnsafeIndexM v = G.basicUnsafeIndexM v
+    {-# INLINE basicUnsafeFreeze #-}
+    {-# INLINE basicUnsafeThaw #-}
+    {-# INLINE basicLength #-}
+    {-# INLINE basicUnsafeSlice #-}
+    {-# INLINE basicUnsafeIndexM #-}
+
+instance M.MVector MVector TimeStamp where
+    basicLength v = M.basicLength v
+    basicUnsafeSlice v = M.basicUnsafeSlice v
+    basicOverlaps v = M.basicOverlaps v
+    basicUnsafeNew v = M.basicUnsafeNew v
+    basicInitialize v = M.basicInitialize v
+    basicUnsafeRead v = M.basicUnsafeRead v
+    basicUnsafeWrite v = M.basicUnsafeWrite v
+    {-# INLINE basicLength #-}
+    {-# INLINE basicUnsafeSlice #-}
+    {-# INLINE basicOverlaps #-}
+    {-# INLINE basicUnsafeNew #-}
+    {-# INLINE basicInitialize #-}
+    {-# INLINE basicUnsafeRead #-}
+    {-# INLINE basicUnsafeWrite #-}
+
+deriving instance Unbox TimeStamp
+
