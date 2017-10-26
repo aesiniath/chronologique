@@ -12,6 +12,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Chrono.TimeStamp
 (
@@ -25,6 +27,10 @@ import Control.Applicative
 import Data.Maybe
 import Data.Int (Int64)
 import Data.Hourglass
+import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Generic.Mutable as M
+import qualified Data.Vector.Primitive as P
+import Data.Vector.Unboxed
 import Time.System
 
 import Chrono.Formats
@@ -117,6 +123,10 @@ instance Read TimeStamp where
 
 reduceDateTime :: DateTime -> TimeStamp
 reduceDateTime = timeFromElapsedP . timeGetElapsedP
+
+instance M.MVector MVector TimeStamp
+instance G.Vector Vector TimeStamp
+instance Unbox TimeStamp
 
 --
 -- | Get the current system time, expressed as a 'TimeStamp' (which is to
