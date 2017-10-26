@@ -14,6 +14,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Chrono.TimeStamp
 (
@@ -144,12 +145,15 @@ convertToTimeStamp = timeFromElapsedP
     superclass requirements to derive an Unbox instance.
 -}
 
+newtype instance MVector s TimeStamp = MV_TimeStamp (MVector s Int64)
+newtype instance Vector TimeStamp = V_TimeStamp (Vector Int64)
+
 instance G.Vector Vector TimeStamp where
-    basicUnsafeFreeze v = G.basicUnsafeFreeze v
-    basicUnsafeThaw v = G.basicUnsafeThaw v
-    basicLength v = G.basicLength v
-    basicUnsafeSlice v = G.basicUnsafeSlice v
-    basicUnsafeIndexM v = G.basicUnsafeIndexM v
+    basicUnsafeFreeze (MV_TimeStamp v) = V_TimeStamp <$> G.basicUnsafeFreeze v
+    basicUnsafeThaw (V_TimeStamp v) = MV_TimeStamp <$> G.basicUnsafeThaw v
+    basicLength (V_TimeStamp v) = G.basicLength v
+    basicUnsafeSlice j k (V_TimeStamp v) = V_TimeStamp $ G.basicUnsafeSlice j k v
+    basicUnsafeIndexM (V_TimeStamp v) i = TimeStamp <$> G.basicUnsafeIndexM v i
     {-# INLINE basicUnsafeFreeze #-}
     {-# INLINE basicUnsafeThaw #-}
     {-# INLINE basicLength #-}
@@ -157,13 +161,13 @@ instance G.Vector Vector TimeStamp where
     {-# INLINE basicUnsafeIndexM #-}
 
 instance M.MVector MVector TimeStamp where
-    basicLength v = M.basicLength v
-    basicUnsafeSlice v = M.basicUnsafeSlice v
-    basicOverlaps v = M.basicOverlaps v
-    basicUnsafeNew v = M.basicUnsafeNew v
-    basicInitialize v = M.basicInitialize v
-    basicUnsafeRead v = M.basicUnsafeRead v
-    basicUnsafeWrite v = M.basicUnsafeWrite v
+    basicLength (MV_TimeStamp v) = M.basicLength v
+    basicUnsafeSlice j k (MV_TimeStamp v) = MV_TimeStamp $ M.basicUnsafeSlice j k v
+    basicOverlaps (MV_TimeStamp a) (MV_TimeStamp b) = M.basicOverlaps a b
+    basicUnsafeNew n = MV_TimeStamp <$> M.basicUnsafeNew n
+    basicInitialize (MV_TimeStamp v) = M.basicInitialize v
+    basicUnsafeRead (MV_TimeStamp v) i = TimeStamp <$> M.basicUnsafeRead v i
+    basicUnsafeWrite (MV_TimeStamp v) i (TimeStamp a) = M.basicUnsafeWrite v i a
     {-# INLINE basicLength #-}
     {-# INLINE basicUnsafeSlice #-}
     {-# INLINE basicOverlaps #-}
