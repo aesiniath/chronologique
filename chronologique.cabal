@@ -78,7 +78,8 @@ test-suite           check
 
   main-is:           TestSuite.hs
 
-  other-modules:     CheckTimeStamp
+  other-modules:     CheckTimeStamp,
+                     CheckVectorOperations
 
   ghc-options:       -threaded
                      -O2
