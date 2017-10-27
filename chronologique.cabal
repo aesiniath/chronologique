@@ -32,7 +32,8 @@ library
 
   build-depends:     base >= 4.9 && < 5,
                      time,
-                     hourglass
+                     hourglass,
+                     vector
 
   hs-source-dirs:    lib
 
@@ -77,7 +78,8 @@ test-suite           check
 
   main-is:           TestSuite.hs
 
-  other-modules:     CheckTimeStamp
+  other-modules:     CheckTimeStamp,
+                     CheckVectorOperations
 
   ghc-options:       -threaded
                      -O2

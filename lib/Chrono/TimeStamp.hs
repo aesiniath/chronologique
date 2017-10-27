@@ -1,7 +1,7 @@
 --
 -- Time to manipulate time
 --
--- Copyright © 2013-2016 Operational Dynamics Consulting, Pty Ltd and Others
+-- Copyright © 2013-2017 Operational Dynamics Consulting, Pty Ltd and Others
 --
 -- The code in this file, and the program it is a part of, is
 -- made available to you by its authors as open source software:
@@ -12,6 +12,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Chrono.TimeStamp
 (
@@ -25,6 +28,10 @@ import Control.Applicative
 import Data.Maybe
 import Data.Int (Int64)
 import Data.Hourglass
+import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Generic.Mutable as M
+import qualified Data.Vector.Primitive as P
+import Data.Vector.Unboxed
 import Time.System
 
 import Chrono.Formats
@@ -129,3 +136,45 @@ getCurrentTimeNanoseconds = do
 
 convertToTimeStamp :: ElapsedP -> TimeStamp
 convertToTimeStamp = timeFromElapsedP
+
+{-
+    Ideally both the existing G.Vector Vector Int64 and M.MVector MVector
+    Int64 instances would be sufficient to support automatically deriving
+    those things for TimeStamp. But, *gaboom* somewhere down in GHC.Prim;
+    writing this gumpf out manually did the trick, and satisifies the
+    superclass requirements to derive an Unbox instance.
+-}
+
+newtype instance MVector s TimeStamp = MV_TimeStamp (MVector s Int64)
+newtype instance Vector TimeStamp = V_TimeStamp (Vector Int64)
+
+instance G.Vector Vector TimeStamp where
+    basicUnsafeFreeze (MV_TimeStamp v) = V_TimeStamp <$> G.basicUnsafeFreeze v
+    basicUnsafeThaw (V_TimeStamp v) = MV_TimeStamp <$> G.basicUnsafeThaw v
+    basicLength (V_TimeStamp v) = G.basicLength v
+    basicUnsafeSlice j k (V_TimeStamp v) = V_TimeStamp $ G.basicUnsafeSlice j k v
+    basicUnsafeIndexM (V_TimeStamp v) i = TimeStamp <$> G.basicUnsafeIndexM v i
+    {-# INLINE basicUnsafeFreeze #-}
+    {-# INLINE basicUnsafeThaw #-}
+    {-# INLINE basicLength #-}
+    {-# INLINE basicUnsafeSlice #-}
+    {-# INLINE basicUnsafeIndexM #-}
+
+instance M.MVector MVector TimeStamp where
+    basicLength (MV_TimeStamp v) = M.basicLength v
+    basicUnsafeSlice j k (MV_TimeStamp v) = MV_TimeStamp $ M.basicUnsafeSlice j k v
+    basicOverlaps (MV_TimeStamp a) (MV_TimeStamp b) = M.basicOverlaps a b
+    basicUnsafeNew n = MV_TimeStamp <$> M.basicUnsafeNew n
+    basicInitialize (MV_TimeStamp v) = M.basicInitialize v
+    basicUnsafeRead (MV_TimeStamp v) i = TimeStamp <$> M.basicUnsafeRead v i
+    basicUnsafeWrite (MV_TimeStamp v) i (TimeStamp a) = M.basicUnsafeWrite v i a
+    {-# INLINE basicLength #-}
+    {-# INLINE basicUnsafeSlice #-}
+    {-# INLINE basicOverlaps #-}
+    {-# INLINE basicUnsafeNew #-}
+    {-# INLINE basicInitialize #-}
+    {-# INLINE basicUnsafeRead #-}
+    {-# INLINE basicUnsafeWrite #-}
+
+deriving instance Unbox TimeStamp
+
