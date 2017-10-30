@@ -30,7 +30,6 @@ import Data.Int (Int64)
 import Data.Hourglass
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as M
-import qualified Data.Vector.Primitive as P
 import Data.Vector.Unboxed
 import Time.System
 
