@@ -1,0 +1,7 @@
+:set -ilib:tests
+:set -XOverloadedStrings
+
+import Data.Vector.Unboxed (Vector, Unbox)
+import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Generic.Mutable as M
