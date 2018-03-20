@@ -1,7 +1,7 @@
 --
 -- Time to manipulate time
 --
--- Copyright © 2013-2017 Operational Dynamics Consulting, Pty Ltd and Others
+-- Copyright © 2013-2018 Operational Dynamics Consulting, Pty Ltd and Others
 --
 -- The code in this file, and the program it is a part of, is
 -- made available to you by its authors as open source software:
@@ -16,7 +16,6 @@ module CheckVectorOperations where
 import Data.Vector.Unboxed (Vector)
 import qualified Data.Vector.Unboxed as V
 import Test.Hspec
-import Test.QuickCheck
 
 import Chrono.TimeStamp
 
