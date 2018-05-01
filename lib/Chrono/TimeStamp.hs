@@ -107,24 +107,27 @@ instance Time TimeStamp where
 
 
 instance Show TimeStamp where
-    show t =
-        timePrint ISO8601_Precise t
+    show t = timePrint ISO8601_Precise t
 
 instance Read TimeStamp where
-    readsPrec _ s = maybeToList $ (,"") <$> reduceDateTime <$> parse s
-      where
-        parse :: String -> Maybe DateTime
-        parse x =   timeParse ISO8601_Precise x
-                <|> timeParse ISO8601_Seconds x
-                <|> timeParse ISO8601_DateAndTime x -- from hourglass
-                <|> timeParse ISO8601_Date x        -- from hourglass
-                <|> timeParse Posix_Precise x
-                <|> timeParse Posix_Micro x
-                <|> timeParse Posix_Milli x
-                <|> timeParse Posix_Seconds x
+    readsPrec _ s = maybeToList $ (,"") <$> parseInput s
 
-reduceDateTime :: DateTime -> TimeStamp
-reduceDateTime = timeFromElapsedP . timeGetElapsedP
+parseInput :: String -> Maybe TimeStamp
+parseInput = fmap reduceDateTime . parse
+  where
+    parse :: String -> Maybe DateTime
+    parse x =
+            timeParse ISO8601_Precise x
+        <|> timeParse ISO8601_Seconds x
+        <|> timeParse ISO8601_DateAndTime x -- from hourglass
+        <|> timeParse ISO8601_Date x        -- from hourglass
+        <|> timeParse Posix_Precise x
+        <|> timeParse Posix_Micro x
+        <|> timeParse Posix_Milli x
+        <|> timeParse Posix_Seconds x
+
+    reduceDateTime :: DateTime -> TimeStamp
+    reduceDateTime = timeFromElapsedP . timeGetElapsedP
 
 --
 -- | Get the current system time, expressed as a 'TimeStamp' (which is to
