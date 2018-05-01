@@ -9,6 +9,7 @@
 -- the 3-clause BSD licence.
 --
 
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TupleSections #-}
@@ -31,6 +32,7 @@ import Data.Hourglass
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as M
 import Data.Vector.Unboxed
+import GHC.Generics
 import Time.System
 
 import Chrono.Formats
@@ -78,7 +80,7 @@ import Chrono.Formats
 --
 newtype TimeStamp = TimeStamp {
     unTimeStamp :: Int64
-} deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded)
+} deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded, Generic)
 
 {-
     Hourglass works by sending types in and out of the Timeable and Time
