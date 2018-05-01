@@ -76,6 +76,8 @@ test-suite           check
                      hourglass,
                      QuickCheck,
                      vector,
+                     bytestring,
+                     aeson,
                      chronologique
 
   hs-source-dirs:    tests
