@@ -26,9 +26,13 @@ module Chrono.TimeStamp
 ) where
 
 import Control.Applicative
+import Data.Aeson
+import Data.Aeson.Types (typeMismatch)
+import Data.Aeson.Encoding (string)
 import Data.Maybe
 import Data.Int (Int64)
 import Data.Hourglass
+import qualified Data.Text as T
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as M
 import Data.Vector.Unboxed
@@ -181,4 +185,23 @@ instance M.MVector MVector TimeStamp where
     {-# INLINE basicUnsafeWrite #-}
 
 deriving instance Unbox TimeStamp
+
+{-
+    JSON encoding and decoding
+-}
+
+instance ToJSON TimeStamp where
+    toEncoding = string . timePrint ISO8601_Precise
+
+instance FromJSON TimeStamp where
+    parseJSON (String value) =
+      let
+        str = T.unpack value
+        result = parseInput str
+      in
+        case result of
+            Just t  -> pure t
+            Nothing -> fail "Unable to parse input as a TimeStamp"
+
+    parseJSON (invalid) = typeMismatch "TimeStamp" invalid
 

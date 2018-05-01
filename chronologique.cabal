@@ -35,7 +35,9 @@ library
   build-depends:     base >= 4.9 && < 5,
                      time,
                      hourglass,
-                     vector
+                     vector,
+                     text,
+                     aeson
 
   hs-source-dirs:    lib
 
