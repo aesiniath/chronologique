@@ -9,6 +9,7 @@
 -- the 3-clause BSD licence.
 --
 
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TupleSections #-}
@@ -25,12 +26,17 @@ module Chrono.TimeStamp
 ) where
 
 import Control.Applicative
+import Data.Aeson
+import Data.Aeson.Types (typeMismatch)
+import Data.Aeson.Encoding (string)
 import Data.Maybe
 import Data.Int (Int64)
 import Data.Hourglass
+import qualified Data.Text as T
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as M
 import Data.Vector.Unboxed
+import GHC.Generics
 import Time.System
 
 import Chrono.Formats
@@ -78,7 +84,7 @@ import Chrono.Formats
 --
 newtype TimeStamp = TimeStamp {
     unTimeStamp :: Int64
-} deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded)
+} deriving (Eq, Ord, Enum, Num, Real, Integral, Bounded, Generic)
 
 {-
     Hourglass works by sending types in and out of the Timeable and Time
@@ -105,24 +111,27 @@ instance Time TimeStamp where
 
 
 instance Show TimeStamp where
-    show t =
-        timePrint ISO8601_Precise t
+    show t = timePrint ISO8601_Precise t
 
 instance Read TimeStamp where
-    readsPrec _ s = maybeToList $ (,"") <$> reduceDateTime <$> parse s
-      where
-        parse :: String -> Maybe DateTime
-        parse x =   timeParse ISO8601_Precise x
-                <|> timeParse ISO8601_Seconds x
-                <|> timeParse ISO8601_DateAndTime x -- from hourglass
-                <|> timeParse ISO8601_Date x        -- from hourglass
-                <|> timeParse Posix_Precise x
-                <|> timeParse Posix_Micro x
-                <|> timeParse Posix_Milli x
-                <|> timeParse Posix_Seconds x
+    readsPrec _ s = maybeToList $ (,"") <$> parseInput s
 
-reduceDateTime :: DateTime -> TimeStamp
-reduceDateTime = timeFromElapsedP . timeGetElapsedP
+parseInput :: String -> Maybe TimeStamp
+parseInput = fmap reduceDateTime . parse
+  where
+    parse :: String -> Maybe DateTime
+    parse x =
+            timeParse ISO8601_Precise x
+        <|> timeParse ISO8601_Seconds x
+        <|> timeParse ISO8601_DateAndTime x -- from hourglass
+        <|> timeParse ISO8601_Date x        -- from hourglass
+        <|> timeParse Posix_Precise x
+        <|> timeParse Posix_Micro x
+        <|> timeParse Posix_Milli x
+        <|> timeParse Posix_Seconds x
+
+    reduceDateTime :: DateTime -> TimeStamp
+    reduceDateTime = timeFromElapsedP . timeGetElapsedP
 
 --
 -- | Get the current system time, expressed as a 'TimeStamp' (which is to
@@ -176,4 +185,23 @@ instance M.MVector MVector TimeStamp where
     {-# INLINE basicUnsafeWrite #-}
 
 deriving instance Unbox TimeStamp
+
+{-
+    JSON encoding and decoding
+-}
+
+instance ToJSON TimeStamp where
+    toEncoding = string . timePrint ISO8601_Precise
+
+instance FromJSON TimeStamp where
+    parseJSON (String value) =
+      let
+        str = T.unpack value
+        result = parseInput str
+      in
+        case result of
+            Just t  -> pure t
+            Nothing -> fail "Unable to parse input as a TimeStamp"
+
+    parseJSON (invalid) = typeMismatch "TimeStamp" invalid
 

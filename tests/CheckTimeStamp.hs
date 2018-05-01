@@ -17,6 +17,8 @@
 
 module CheckTimeStamp where
 
+import Data.Aeson
+import qualified Data.ByteString.Lazy.Char8 as L
 import Test.Hspec
 import Test.QuickCheck
 import Data.Hourglass
@@ -102,13 +104,27 @@ checkTimeStamp = do
             show (convertToUTC t) `shouldBe` "2014-07-31 23:23:35.948797001 UTC"
 
         it "behaves when QuickChecked" $ do
-            property prop_RoundTrip
+            property prop_RoundTrip_ReadShow
 
+    describe "Round trip via JSON" $ do
+        it "explicit JSON encoding is correct" $ do
+            let t = read "2018-05-01T01:42:12Z" :: TimeStamp
+            encode t `shouldBe` L.pack "\"2018-05-01T01:42:12.000000000Z\""
+
+        it "converts to a JSON String and back again" $ do
+            let t = read "2018-05-01T01:42:12Z" :: TimeStamp
+            (decode . encode) t `shouldBe` Just t
+
+        it "behaves when QuickChecked" $ do
+            property prop_RoundTrip_Aeson
 
 instance Arbitrary TimeStamp where
     arbitrary = do
         tick <- arbitrary
         return (TimeStamp tick)
 
-prop_RoundTrip :: TimeStamp -> Bool
-prop_RoundTrip t = (read . show) t == t
+prop_RoundTrip_ReadShow :: TimeStamp -> Bool
+prop_RoundTrip_ReadShow t = (read . show) t == t
+
+prop_RoundTrip_Aeson :: TimeStamp -> Bool
+prop_RoundTrip_Aeson t = (decode . encode) t == Just t
