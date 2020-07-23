@@ -24,7 +24,7 @@ maintainer:          Andrew Cowie <istathar@gmail.com>
 copyright:           © 2016-2018 Athae Eredh Siniath and Others
 homepage:            https://github.com/aesiniath/chronologique/
 category:            Text
-tested-with:         GHC == 8.2.2, GHC == 8.4.2
+tested-with:         GHC == 8.8.3
 
 build-type:          Simple
 
